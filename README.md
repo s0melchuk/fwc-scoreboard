@@ -93,16 +93,28 @@ Then add the repository and dependency to your project's `pom.xml`:
 (The `<repository>`'s `id` must match the `<server>` `id` in `settings.xml` — both are `github`
 above — for Maven to apply the credentials.)
 
-### Cutting a release (maintainers)
+### Releasing (maintainers)
+
+Releases are automatic: merging a PR to `main` triggers
+[release-on-merge.yml](.github/workflows/release-on-merge.yml), which tags the merge commit with
+the next patch version (`v1.0.0` &rarr; `v1.0.1`, taking the highest existing `vX.Y.Z` tag as the
+starting point, or `v0.1.0` if none exists yet) and creates a GitHub Release from it with
+auto-generated notes. That Release publish event triggers
+[publish.yml](.github/workflows/publish.yml), which builds, verifies, and deploys the new version
+to GitHub Packages — the whole path from "PR merged" to "new version published" needs no manual
+steps.
+
+**For a minor or major bump instead of a patch**, tag and release it yourself before merging the
+next PR:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.0
+git push origin v1.1.0
+gh release create v1.1.0 --generate-notes
 ```
 
-Then create a GitHub Release from that tag (via the UI, or `gh release create v1.0.0`). Publishing
-the release triggers [publish.yml](.github/workflows/publish.yml), which builds, verifies, and
-deploys `1.0.0` to GitHub Packages automatically — no manual `mvn deploy` needed.
+The next merge's automatic patch bump picks up from whatever the latest tag is, so it will
+continue from `v1.1.1` onward.
 
 ## API
 

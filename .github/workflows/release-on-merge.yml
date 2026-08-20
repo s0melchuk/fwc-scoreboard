@@ -1,0 +1,57 @@
+name: Release on merge
+
+# Every PR merged to main gets a new patch version, automatically: tag it, cut a GitHub
+# Release from it, and let that Release trigger publish.yml. There is no version to keep in
+# sync in pom.xml for this - the git tag is the single source of truth for the published
+# version, and publish.yml stamps it onto the POM only at publish time (see that workflow).
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+# Two PRs merging close together must not race to compute the same "next" tag; queue them.
+concurrency:
+  group: release-on-merge
+  cancel-in-progress: false
+
+jobs:
+  tag-and-release:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need full tag history to find the latest release tag
+
+      - name: Compute next patch version
+        id: version
+        run: |
+          latest_tag=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)
+          if [ -z "$latest_tag" ]; then
+            new_tag="v0.1.0"
+            echo "No existing release tag found; starting at $new_tag"
+          else
+            version="${latest_tag#v}"
+            IFS='.' read -r major minor patch <<< "$version"
+            new_tag="v${major}.${minor}.$((patch + 1))"
+            echo "Latest tag: $latest_tag -> bumping patch to $new_tag"
+          fi
+          echo "new_tag=$new_tag" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.new_tag }}" -m "Release ${{ steps.version.outputs.new_tag }}"
+          git push origin "${{ steps.version.outputs.new_tag }}"
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.new_tag }}" \
+            --title "${{ steps.version.outputs.new_tag }}" \
+            --generate-notes
