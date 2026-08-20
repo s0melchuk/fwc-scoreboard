@@ -51,6 +51,14 @@ this file and the commit history itself.
    itself rejects as invalid placement), a `publish.yml` workflow that stamps the release tag onto
    the POM and runs `mvn deploy` to GitHub Packages, and README sections for both consuming the
    package (GitHub Packages requires a PAT even for public repos) and cutting a release.
+5. **Automatic patch releases.** Asked to bump the patch version on every PR merge. Since this
+   changed the release cadence just established (deliberate GitHub Releases only) to "every merge
+   is a release," Claude asked one clarifying question first — tag+release+auto-publish vs.
+   tag-only vs. pom.xml-version-only — and on choosing the first, added a `release-on-merge.yml`
+   workflow that computes the next patch version from the highest existing tag, tags the merge
+   commit, and creates a GitHub Release (which in turn fires the existing `publish.yml`). Verified
+   the version-bump arithmetic locally against real git tags (both the "no tags yet" and
+   "existing vX.Y.Z tag" cases) before committing.
 
 ## Artifacts that guided the implementation
 
