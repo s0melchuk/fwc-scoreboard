@@ -28,7 +28,7 @@ public record Match(MatchId id, Team homeTeam, Team awayTeam, Score score, long 
         return new Match(id, homeTeam, awayTeam, newScore, startOrder);
     }
 
-    public int totalScore() {
+    public long totalScore() {
         return score.total();
     }
 }

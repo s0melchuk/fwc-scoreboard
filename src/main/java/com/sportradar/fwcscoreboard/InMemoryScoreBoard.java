@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
@@ -69,7 +70,7 @@ public final class InMemoryScoreBoard implements ScoreBoard {
     public synchronized List<Match> getSummary() {
         List<Match> summary = new ArrayList<>(matches.values());
         summary.sort(
-                Comparator.comparingInt(Match::totalScore)
+                Comparator.comparingLong(Match::totalScore)
                         .reversed()
                         .thenComparing(Comparator.comparingLong(Match::startOrder).reversed()));
         return summary;
@@ -81,6 +82,7 @@ public final class InMemoryScoreBoard implements ScoreBoard {
     }
 
     private Match requireMatch(MatchId matchId) {
+        Objects.requireNonNull(matchId, "matchId must not be null");
         Match match = matches.get(matchId);
         if (match == null) {
             throw new MatchNotFoundException(matchId);

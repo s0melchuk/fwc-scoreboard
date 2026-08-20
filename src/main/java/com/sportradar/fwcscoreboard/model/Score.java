@@ -18,7 +18,13 @@ public record Score(int home, int away) {
         }
     }
 
-    public int total() {
-        return home + away;
+    /**
+     * The combined goal count. Widened to {@code long} so that two individually valid {@code int}
+     * scores (up to {@link Integer#MAX_VALUE} each) can never overflow when summed, which would
+     * otherwise silently corrupt {@link com.sportradar.fwcscoreboard.ScoreBoard#getSummary()}'s
+     * ordering.
+     */
+    public long total() {
+        return (long) home + away;
     }
 }
