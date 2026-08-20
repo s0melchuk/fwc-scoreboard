@@ -2,52 +2,52 @@
 
 ## Summary
 
-This solution was built with Claude Code (Anthropic's CLI agent), acting as a pair-programmer:
-reading the task PDF, proposing a design, implementing it, and writing tests, docs and commits.
-I reviewed and directed each step rather than accepting a single one-shot generation — the plan
-was discussed and adjusted (target Java version, choice of the additional feature) before any
-code was written, and the resulting design decisions and their rationale are mine, documented in
-[README.md](README.md).
+This solution was built with Claude Code (Anthropic's CLI agent), acting as a pair-programmer
+across several sessions: reading the task PDF, proposing a design, implementing it, responding to
+PR review comments, and hardening the repository's build/test setup. I reviewed and directed each
+step rather than accepting one-shot generation — plans and open design questions were discussed
+before code was written, and the resulting decisions and their rationale are mine, documented in
+[README.md](README.md). Below is a per-session summary rather than a full prompt transcript, since
+a verbatim log would grow unboundedly across sessions without adding much beyond what's already in
+this file and the commit history itself.
 
-## How AI was used, step by step
+## Sessions
 
-1. **Requirements extraction.** Gave Claude the task PDF (`ODDS and Data - JAVA Coding Task.pdf`)
-   and asked it to read the requirements.
-2. **Planning.** Asked Claude to propose an implementation plan before writing any code. It
-   proposed a domain model (`Team`, `Score`, `Match`, `MatchId`), a `ScoreBoard` interface with an
-   `InMemoryScoreBoard` implementation, validation/thread-safety choices, and a commit structure.
-   Two decisions were surfaced as explicit questions rather than assumed silently:
-   - Which feature to add as the required 5th operation (chose: a single-match lookup,
-     `getMatch`, over alternatives like a "one team, one match" validation rule or a
-     human-readable formatted summary).
-   - Target Java version (chose: match the local JDK, 25).
-3. **Implementation.** Claude wrote the Maven project, domain records, the `ScoreBoard` interface,
-   `InMemoryScoreBoard`, custom exceptions, and JUnit 5 + AssertJ tests (including the exact
-   example scenario from the brief), compiling and running the test suite after each stage to
-   verify correctness before committing.
-4. **The additional feature (`getMatch`)** was implemented and committed separately from the core
-   four operations, as the brief requires a distinct commit for it.
-5. **Documentation.** Claude drafted `README.md` (assumptions, reasoning, trade-offs, and the
-   added-feature writeup) and this file, from the actual decisions made during the session above.
-
-## Prompt history (condensed)
-
-1. *"@[task PDF] Now to the actual coding challenge - here are the requirements I have received -
-   can we plan an implementation?"*
-2. Claude read the PDF and proposed a design; asked two clarifying questions (extra feature choice,
-   Java version) via a multiple-choice prompt.
-3. *"Get match by ID / lookup"* and *"Match local JDK (25)"* — my answers to those two questions.
-4. Claude presented the full plan (domain model, API, decisions to document, testing approach,
-   commit shape) and asked for confirmation or adjustments.
-5. *"Sounds good - You can start. Please follow the instructions from task PDF (especially point
-   5)"* — approval to proceed, with an explicit reminder to satisfy the brief's requirement that
-   the additional operation get its own distinct commit.
-6. Claude implemented the project across three commits (skeleton, core operations, the `getMatch`
-   feature), running `mvn test` after each stage, then wrote `README.md` and this file.
+1. **Initial implementation.** Gave Claude the task PDF and asked it to plan an implementation
+   before writing code. Two decisions were surfaced as explicit questions rather than assumed
+   silently: which feature to add as the required 5th operation (chose a single-match lookup,
+   `getMatch`), and the target Java version (chose to match the local JDK, 25). Claude then built
+   the Maven project, domain model (`Team`, `Score`, `Match`, `MatchId`), the `ScoreBoard`
+   interface with its `InMemoryScoreBoard` implementation, JUnit 5 + AssertJ tests (including the
+   brief's exact example scenario), and `README.md`/`AI.md`, across commits matching the brief's
+   requirement that the added feature land in its own distinct commit. I confirmed a feature-branch
+   workflow afterward — commits had gone directly to `main` — so Claude split the work onto
+   `feature/live-scoreboard` and reset `main` back to its prior state.
+2. **PR review response.** I pasted three review comments (a Javadoc/exception mismatch on
+   negative-score handling, `MatchId`'s "opaque" Javadoc overstating what a public record actually
+   enforces, and tests constructing arbitrary `MatchId` values). Claude fixed the Javadoc to match
+   actual exception types, softened the `MatchId` wording to describe convention rather than an
+   enforced constraint, and rewrote the affected tests to derive an unknown id via the real API
+   (start then finish) instead of `new MatchId(999)`, deduplicating tests that became redundant
+   as a result.
+3. **Repository setup.** Asked what else would be expected for a senior-level submission; Claude
+   suggested a prioritized list (CI, null/boundary tests, a concurrency test, formatting/static
+   analysis tooling, coverage reporting, a runnable example) and, on approval, implemented it on
+   a new feature branch: explicit null handling plus a fix for an `int`-overflow bug in score
+   totals it surfaced while adding boundary tests, a concurrency test exercising the board's
+   thread-safety claim under real contention, `package-info.java` for each package, Spotless
+   formatting wired into `mvn verify` (after `google-java-format` and `palantir-java-format` both
+   crashed against JDK 25's javac internals — worked around by switching to the Eclipse formatter),
+   JaCoCo coverage reporting, a GitHub Actions CI workflow, and a runnable demo reproducing the
+   brief's example scenario. SpotBugs was evaluated for static analysis but dropped: its bundled
+   class reader doesn't yet support JDK 25 bytecode.
 
 ## Artifacts that guided the implementation
 
 - The task brief itself: `ODDS and Data - JAVA Coding Task.pdf` (provided by the user), in
   particular the exact example scenario, which is encoded verbatim as a test case
-  (`InMemoryScoreBoardTest.Summary#ordersByTotalScoreDescendingThenMostRecentlyStartedFirst`).
+  (`InMemoryScoreBoardTest.Summary#ordersByTotalScoreDescendingThenMostRecentlyStartedFirst`) and
+  as the runnable demo (`ScoreBoardDemo`).
+- Three PR review comments (provided by the user, pasted from the actual review) drove the fixes
+  described in Session 2 above.
 - No other external code samples, templates, or repositories were used as a reference.
