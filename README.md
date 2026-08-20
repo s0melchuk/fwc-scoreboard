@@ -49,6 +49,61 @@ List<Match> summary = board.getSummary(); // ordered per the rules below
 board.finishMatch(mexicoCanada);
 ```
 
+## Consuming this library from another service
+
+Published to [GitHub Packages](https://github.com/s0melchuk/fwc-scoreboard/packages) as a Maven
+artifact whenever a [GitHub Release](https://github.com/s0melchuk/fwc-scoreboard/releases) is
+published; the package version matches the release tag (`v1.2.3` &rarr; `1.2.3`).
+
+**GitHub Packages requires authentication to *consume* a Maven artifact, even from a public
+repository** — this is a GitHub platform limitation, not something this project controls. Add a
+server entry to your own `~/.m2/settings.xml` with a
+[personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+that has `read:packages` scope:
+
+```xml
+<settings>
+  <servers>
+    <server>
+      <id>github</id>
+      <username>YOUR_GITHUB_USERNAME</username>
+      <password>YOUR_PAT_WITH_read:packages_SCOPE</password>
+    </server>
+  </servers>
+</settings>
+```
+
+Then add the repository and dependency to your project's `pom.xml`:
+
+```xml
+<repositories>
+  <repository>
+    <id>github</id>
+    <url>https://maven.pkg.github.com/s0melchuk/fwc-scoreboard</url>
+  </repository>
+</repositories>
+
+<dependency>
+  <groupId>com.sportradar</groupId>
+  <artifactId>fwc-scoreboard</artifactId>
+  <version>1.0.0</version> <!-- match a published release tag -->
+</dependency>
+```
+
+(The `<repository>`'s `id` must match the `<server>` `id` in `settings.xml` — both are `github`
+above — for Maven to apply the credentials.)
+
+### Cutting a release (maintainers)
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+Then create a GitHub Release from that tag (via the UI, or `gh release create v1.0.0`). Publishing
+the release triggers [publish.yml](.github/workflows/publish.yml), which builds, verifies, and
+deploys `1.0.0` to GitHub Packages automatically — no manual `mvn deploy` needed.
+
 ## API
 
 | Operation | Method |
