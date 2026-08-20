@@ -9,14 +9,17 @@ import java.util.Objects;
  * Equality and hashing are name-based. Names are compared as given (no case-folding or trimming
  * beyond rejecting blank input) since the scoreboard does not attempt to normalize or canonicalize
  * team names against any external reference data.
- *
- * @throws NullPointerException
- *             if {@code name} is {@code null}
- * @throws IllegalArgumentException
- *             if {@code name} is blank
  */
 public record Team(String name) {
 
+    /**
+     * @param name
+     *            the team's name
+     * @throws NullPointerException
+     *             if {@code name} is {@code null}
+     * @throws IllegalArgumentException
+     *             if {@code name} is blank
+     */
     public Team {
         Objects.requireNonNull(name, "Team name must not be null");
         if (name.isBlank()) {
