@@ -49,6 +49,14 @@ class InMemoryScoreBoardTest {
         }
 
         @Test
+        void rejectsNullTeamNames() {
+            assertThatThrownBy(() -> board.startMatch(null, "Canada"))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> board.startMatch("Mexico", null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @Test
         void rejectsATeamPlayingItself() {
             assertThatThrownBy(() -> board.startMatch("Mexico", "Mexico"))
                     .isInstanceOf(IllegalArgumentException.class);
@@ -97,6 +105,12 @@ class InMemoryScoreBoardTest {
         }
 
         @Test
+        void rejectsNullMatchId() {
+            assertThatThrownBy(() -> board.updateScore(null, 1, 0))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @Test
         void rejectsNegativeScores() {
             MatchId id = board.startMatch("Mexico", "Canada");
 
@@ -111,6 +125,17 @@ class InMemoryScoreBoardTest {
 
             assertThatThrownBy(() -> board.updateScore(id, 1, 1))
                     .isInstanceOf(IllegalScoreException.class);
+        }
+
+        @Test
+        void acceptsLargeScoresAtTheIntegerBoundary() {
+            MatchId id = board.startMatch("Mexico", "Canada");
+
+            board.updateScore(id, Integer.MAX_VALUE, Integer.MAX_VALUE);
+
+            Match match = board.getMatch(id).orElseThrow();
+            assertThat(match.score().home()).isEqualTo(Integer.MAX_VALUE);
+            assertThat(match.score().away()).isEqualTo(Integer.MAX_VALUE);
         }
     }
 
@@ -133,6 +158,12 @@ class InMemoryScoreBoardTest {
 
             assertThatThrownBy(() -> board.finishMatch(id))
                     .isInstanceOf(MatchNotFoundException.class);
+        }
+
+        @Test
+        void rejectsNullMatchId() {
+            assertThatThrownBy(() -> board.finishMatch(null))
+                    .isInstanceOf(NullPointerException.class);
         }
     }
 
@@ -157,6 +188,11 @@ class InMemoryScoreBoardTest {
             board.finishMatch(id);
 
             assertThat(board.getMatch(id)).isEmpty();
+        }
+
+        @Test
+        void returnsEmptyForANullId() {
+            assertThat(board.getMatch(null)).isEmpty();
         }
     }
 
@@ -187,6 +223,22 @@ class InMemoryScoreBoardTest {
             assertThat(summary)
                     .extracting(m -> m.homeTeam().name())
                     .containsExactly("Uruguay", "Spain", "Mexico", "Argentina", "Germany");
+        }
+
+        @Test
+        void ordersByTotalScoreWithoutIntOverflowAtTheBoundary() {
+            MatchId huge = board.startMatch("Mexico", "Canada");
+            MatchId small = board.startMatch("Spain", "Brazil");
+
+            // home + away here would overflow a 32-bit int total if summed naively.
+            board.updateScore(huge, Integer.MAX_VALUE, Integer.MAX_VALUE);
+            board.updateScore(small, 1, 0);
+
+            List<Match> summary = board.getSummary();
+
+            assertThat(summary)
+                    .extracting(m -> m.homeTeam().name())
+                    .containsExactly("Mexico", "Spain");
         }
 
         @Test

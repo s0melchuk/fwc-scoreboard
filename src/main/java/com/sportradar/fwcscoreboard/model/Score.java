@@ -3,9 +3,10 @@ package com.sportradar.fwcscoreboard.model;
 /**
  * An immutable pair of goal counts for a match, home and away.
  *
- * <p>Scores are absolute goal counts, not deltas: {@link
- * com.sportradar.fwcscoreboard.ScoreBoard#updateScore} always replaces the score outright rather
- * than incrementing it. Both values must be non-negative.
+ * <p>
+ * Scores are absolute goal counts, not deltas:
+ * {@link com.sportradar.fwcscoreboard.ScoreBoard#updateScore} always replaces the score outright
+ * rather than incrementing it. Both values must be non-negative.
  */
 public record Score(int home, int away) {
 
@@ -18,7 +19,13 @@ public record Score(int home, int away) {
         }
     }
 
-    public int total() {
-        return home + away;
+    /**
+     * The combined goal count. Widened to {@code long} so that two individually valid {@code int}
+     * scores (up to {@link Integer#MAX_VALUE} each) can never overflow when summed, which would
+     * otherwise silently corrupt {@link com.sportradar.fwcscoreboard.ScoreBoard#getSummary()}'s
+     * ordering.
+     */
+    public long total() {
+        return (long) home + away;
     }
 }

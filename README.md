@@ -11,7 +11,29 @@ start a match, update its score, finish it, and get an ordered summary of everyt
 ## Building and testing
 
 ```bash
-mvn test
+mvn verify
+```
+
+Runs the full test suite (including a dedicated concurrency test, see [AI.md](AI.md) for context)
+plus a code-formatting check (`mvn spotless:apply` fixes violations locally). A coverage report
+is written to `target/site/jacoco/index.html`.
+
+## Try it
+
+A runnable, dependency-free walkthrough of the exact example scenario from the exercise brief:
+
+```bash
+mvn -q compile
+java -cp target/classes com.sportradar.fwcscoreboard.example.ScoreBoardDemo
+```
+
+```
+Summary (expected: Uruguay, Spain, Mexico, Argentina, Germany):
+1. Uruguay 6 - 6 Italy
+2. Spain 10 - 2 Brazil
+3. Mexico 0 - 5 Canada
+4. Argentina 3 - 1 Australia
+5. Germany 2 - 2 France
 ```
 
 ## Usage

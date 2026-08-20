@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
@@ -19,7 +20,8 @@ import java.util.stream.Stream;
 /**
  * An in-memory {@link ScoreBoard} backed by a {@link LinkedHashMap}.
  *
- * <p>Not built for high-throughput concurrent access: every public method is synchronized on
+ * <p>
+ * Not built for high-throughput concurrent access: every public method is synchronized on
  * {@code this}, giving simple, easy-to-verify correctness for the modest number of simultaneous
  * matches a real scoreboard ever has (a handful, not thousands). A lock-free or finer-grained
  * design would only pay for itself at a scale this library isn't intended for.
@@ -69,7 +71,7 @@ public final class InMemoryScoreBoard implements ScoreBoard {
     public synchronized List<Match> getSummary() {
         List<Match> summary = new ArrayList<>(matches.values());
         summary.sort(
-                Comparator.comparingInt(Match::totalScore)
+                Comparator.comparingLong(Match::totalScore)
                         .reversed()
                         .thenComparing(Comparator.comparingLong(Match::startOrder).reversed()));
         return summary;
@@ -81,6 +83,7 @@ public final class InMemoryScoreBoard implements ScoreBoard {
     }
 
     private Match requireMatch(MatchId matchId) {
+        Objects.requireNonNull(matchId, "matchId must not be null");
         Match match = matches.get(matchId);
         if (match == null) {
             throw new MatchNotFoundException(matchId);
