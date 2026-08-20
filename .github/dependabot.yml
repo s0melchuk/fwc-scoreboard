@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # actions/checkout@v4, actions/setup-java@v4, etc. across the three workflows in
+  # .github/workflows/ are floating major-version tags. Actions supply-chain drift is a real,
+  # current risk category; Dependabot opens a PR when a newer version is available so these
+  # don't quietly stay pinned to something outdated (or worse, an eventually-yanked version).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+
+  # JUnit and AssertJ are the only two dependencies this library has, and both are test-scoped
+  # (see pom.xml) - the published artifact itself has zero runtime dependencies. Tracked anyway:
+  # a compromised test-tooling release is still a supply-chain risk worth catching, just a lower
+  # one, which is why this is Dependabot's free built-in advisory tracking rather than something
+  # heavier like OWASP Dependency-Check - there's no runtime dependency tree to justify that.
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      test-dependencies:
+        patterns:
+          - '*'
