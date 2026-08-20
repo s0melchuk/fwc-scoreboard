@@ -41,6 +41,16 @@ this file and the commit history itself.
    JaCoCo coverage reporting, a GitHub Actions CI workflow, and a runnable demo reproducing the
    brief's example scenario. SpotBugs was evaluated for static analysis but dropped: its bundled
    class reader doesn't yet support JDK 25 bytecode.
+4. **GitHub Packages publishing.** Asked how to require a green CI check before merging (answered
+   directly, no code change — a GitHub branch-protection setting the user configured themselves).
+   Then asked to set up packaging so the library could be published for other services to consume.
+   Claude asked one clarifying question (publish trigger: on every push, manual only, or on GitHub
+   Release) and, on choosing release-triggered, added POM distribution metadata and sources/javadoc
+   jars (surfacing and fixing a genuine Javadoc defect along the way — `Team`'s `@throws` tags were
+   on the record's class-level doc instead of its compact constructor, which the javadoc tool
+   itself rejects as invalid placement), a `publish.yml` workflow that stamps the release tag onto
+   the POM and runs `mvn deploy` to GitHub Packages, and README sections for both consuming the
+   package (GitHub Packages requires a PAT even for public repos) and cutting a release.
 
 ## Artifacts that guided the implementation
 
