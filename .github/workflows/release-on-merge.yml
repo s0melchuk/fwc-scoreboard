@@ -24,6 +24,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
+          # Default checkout for a pull_request event resolves the synthetic
+          # refs/pull/<pr>/merge ref, not the commit that actually landed on main (and for a
+          # squash or rebase merge it isn't even the same commit at all). Pin explicitly to
+          # the real merge commit so the tag/release point at what's actually on main.
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0 # need full tag history to find the latest release tag
 
       - name: Compute next patch version

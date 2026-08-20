@@ -22,6 +22,8 @@ jobs:
           java-version: '25'
           cache: maven
           server-id: github # matches pom.xml distributionManagement/repository/id
+          server-username: GITHUB_ACTOR # name of the env var holding the username at deploy time
+          server-password: GITHUB_TOKEN # name of the env var holding the password/token at deploy time
 
       - name: Derive release version from tag
         id: version
