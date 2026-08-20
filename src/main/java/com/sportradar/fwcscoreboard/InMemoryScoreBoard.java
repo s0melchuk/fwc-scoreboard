@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
@@ -72,6 +73,11 @@ public final class InMemoryScoreBoard implements ScoreBoard {
                         .reversed()
                         .thenComparing(Comparator.comparingLong(Match::startOrder).reversed()));
         return summary;
+    }
+
+    @Override
+    public synchronized Optional<Match> getMatch(MatchId matchId) {
+        return Optional.ofNullable(matches.get(matchId));
     }
 
     private Match requireMatch(MatchId matchId) {

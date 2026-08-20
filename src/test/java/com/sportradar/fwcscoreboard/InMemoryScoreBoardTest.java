@@ -9,6 +9,7 @@ import com.sportradar.fwcscoreboard.exception.TeamAlreadyPlayingException;
 import com.sportradar.fwcscoreboard.model.Match;
 import com.sportradar.fwcscoreboard.model.MatchId;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -135,6 +136,35 @@ class InMemoryScoreBoardTest {
 
             assertThatThrownBy(() -> board.finishMatch(id))
                     .isInstanceOf(MatchNotFoundException.class);
+        }
+    }
+
+    @Nested
+    class GetMatch {
+
+        @Test
+        void returnsTheCurrentStateOfAnInProgressMatch() {
+            MatchId id = board.startMatch("Mexico", "Canada");
+            board.updateScore(id, 1, 2);
+
+            Optional<Match> found = board.getMatch(id);
+
+            assertThat(found).isPresent();
+            assertThat(found.get().score().home()).isEqualTo(1);
+            assertThat(found.get().score().away()).isEqualTo(2);
+        }
+
+        @Test
+        void returnsEmptyForAnUnknownId() {
+            assertThat(board.getMatch(new MatchId(999))).isEmpty();
+        }
+
+        @Test
+        void returnsEmptyAfterTheMatchHasFinished() {
+            MatchId id = board.startMatch("Mexico", "Canada");
+            board.finishMatch(id);
+
+            assertThat(board.getMatch(id)).isEmpty();
         }
     }
 

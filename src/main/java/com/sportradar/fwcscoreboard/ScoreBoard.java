@@ -6,6 +6,7 @@ import com.sportradar.fwcscoreboard.exception.TeamAlreadyPlayingException;
 import com.sportradar.fwcscoreboard.model.Match;
 import com.sportradar.fwcscoreboard.model.MatchId;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A scoreboard for football matches in progress.
@@ -50,4 +51,19 @@ public interface ScoreBoard {
      * score are ordered by most recently started first.
      */
     List<Match> getSummary();
+
+    /**
+     * Looks up a single in-progress match by id.
+     *
+     * <p>This is the "additional operation" required by the exercise brief. A scoreboard summary
+     * is naturally followed by drilling into one match (a client polling for updates on a match
+     * it's already displaying, for instance), and an explicit lookup lets a caller do that
+     * without re-deriving it from {@link #getSummary()} and without throwing for a match that may
+     * have already finished &mdash; unlike the other operations, "not found" is an expected,
+     * non-exceptional outcome here.
+     *
+     * @return the match, or {@link Optional#empty()} if {@code matchId} does not refer to an
+     *     in-progress match
+     */
+    Optional<Match> getMatch(MatchId matchId);
 }
