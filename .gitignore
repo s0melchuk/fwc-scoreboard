@@ -28,3 +28,8 @@ replay_pid*
 
 # Claude Code local overrides (machine-specific, not shared with the team)
 .claude/settings.local.json
+
+# IntelliJ IDEA project files (local to each developer's machine)
+.idea/
+*.iml
+out/
