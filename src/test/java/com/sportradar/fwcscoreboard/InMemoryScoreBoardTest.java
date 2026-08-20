@@ -32,7 +32,7 @@ class InMemoryScoreBoardTest {
 
             List<Match> summary = board.getSummary();
             assertThat(summary).hasSize(1);
-            Match match = summary.get(0);
+            Match match = summary.getFirst();
             assertThat(match.id()).isEqualTo(id);
             assertThat(match.homeTeam().name()).isEqualTo("Mexico");
             assertThat(match.awayTeam().name()).isEqualTo("Canada");
@@ -82,7 +82,7 @@ class InMemoryScoreBoardTest {
 
             board.updateScore(id, 0, 5);
 
-            Match match = board.getSummary().get(0);
+            Match match = board.getSummary().getFirst();
             assertThat(match.score().home()).isZero();
             assertThat(match.score().away()).isEqualTo(5);
         }

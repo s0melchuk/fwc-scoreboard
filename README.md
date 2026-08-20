@@ -55,7 +55,7 @@ The brief deliberately leaves several things open. Here's what I assumed, and wh
   corrections (e.g. a wrongly awarded goal) as out of scope — a real system would need a distinct,
   audited "correction" operation rather than silently accepting a lower score through the normal
   update path.
-- **No draws/extra-time/penalties modelling, no match clock, no persistence.** The brief asks for
+- **No draws/extra-time/penalties modeling, no match clock, no persistence.** The brief asks for
   a scoreboard of scores and match state, not a full match-event or timing model. `startOrder` is
   a logical sequence counter, not a wall-clock timestamp — it's what "most recently started" is
   defined by, and it keeps ordering deterministic and easy to test regardless of how fast calls
@@ -68,7 +68,7 @@ The brief deliberately leaves several things open. Here's what I assumed, and wh
   library with unknown callers shouldn't quietly assume it. `InMemoryScoreBoard` synchronizes its
   public methods.
 - **Team names are just non-blank strings.** No validation against a real list of national teams,
-  no normalisation (case, whitespace beyond trimming blank-checks). Out of scope for "simple
+  no normalization (case, whitespace beyond trimming blank-checks). Out of scope for "simple
   library."
 
 ## Trade-offs
