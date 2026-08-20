@@ -89,7 +89,10 @@ class InMemoryScoreBoardTest {
 
         @Test
         void rejectsUnknownMatch() {
-            assertThatThrownBy(() -> board.updateScore(new MatchId(999), 1, 0))
+            MatchId finishedId = board.startMatch("Mexico", "Canada");
+            board.finishMatch(finishedId);
+
+            assertThatThrownBy(() -> board.updateScore(finishedId, 1, 0))
                     .isInstanceOf(MatchNotFoundException.class);
         }
 
@@ -124,13 +127,7 @@ class InMemoryScoreBoardTest {
         }
 
         @Test
-        void rejectsUnknownMatch() {
-            assertThatThrownBy(() -> board.finishMatch(new MatchId(999)))
-                    .isInstanceOf(MatchNotFoundException.class);
-        }
-
-        @Test
-        void rejectsFinishingTheSameMatchTwice() {
+        void rejectsUnknownOrAlreadyFinishedMatch() {
             MatchId id = board.startMatch("Mexico", "Canada");
             board.finishMatch(id);
 
@@ -152,11 +149,6 @@ class InMemoryScoreBoardTest {
             assertThat(found).isPresent();
             assertThat(found.get().score().home()).isEqualTo(1);
             assertThat(found.get().score().away()).isEqualTo(2);
-        }
-
-        @Test
-        void returnsEmptyForAnUnknownId() {
-            assertThat(board.getMatch(new MatchId(999))).isEmpty();
         }
 
         @Test

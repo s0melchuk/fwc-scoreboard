@@ -33,8 +33,9 @@ public interface ScoreBoard {
      * 2, 1)} to record the match as 2-1, regardless of what it was before.
      *
      * @throws MatchNotFoundException if {@code matchId} does not refer to an in-progress match
-     * @throws IllegalScoreException if either score is negative, or lower than the match's
-     *     current recorded score
+     * @throws IllegalArgumentException if either score is negative
+     * @throws IllegalScoreException if either score is lower than the match's current recorded
+     *     score
      */
     void updateScore(MatchId matchId, int homeScore, int awayScore);
 
