@@ -65,6 +65,15 @@
                 <version>3.13.0</version>
             </plugin>
             <plugin>
+                <!-- Not bound to any phase; invoked explicitly by the publish workflow
+                     (mvn versions:set) to stamp the release tag's version onto the POM
+                     before deploying. Pinned here so that invocation resolves the same
+                     plugin version in CI as it would locally. -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.18.0</version>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
