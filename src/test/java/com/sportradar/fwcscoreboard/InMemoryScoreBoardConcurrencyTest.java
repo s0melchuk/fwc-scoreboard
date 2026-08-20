@@ -16,10 +16,9 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 /**
- * {@link InMemoryScoreBoard} documents itself as safe for concurrent use. These tests exercise
- * that claim under real contention rather than taking it on faith: many threads hammering the
- * board at once, asserting the board never ends up in a state a sequential caller couldn't have
- * produced.
+ * {@link InMemoryScoreBoard} documents itself as safe for concurrent use. These tests exercise that
+ * claim under real contention rather than taking it on faith: many threads hammering the board at
+ * once, asserting the board never ends up in a state a sequential caller couldn't have produced.
  */
 class InMemoryScoreBoardConcurrencyTest {
 
@@ -27,7 +26,8 @@ class InMemoryScoreBoardConcurrencyTest {
     private static final int MATCHES_PER_THREAD = 50;
 
     @Test
-    void startingManyMatchesConcurrentlyProducesNoDuplicatesAndNoLostMatches() throws InterruptedException {
+    void startingManyMatchesConcurrentlyProducesNoDuplicatesAndNoLostMatches()
+            throws InterruptedException {
         InMemoryScoreBoard board = new InMemoryScoreBoard();
         Set<MatchId> observedIds = ConcurrentHashMap.newKeySet();
 
@@ -86,7 +86,8 @@ class InMemoryScoreBoardConcurrencyTest {
         assertThat(board.getSummary()).hasSize(1);
     }
 
-    private void runConcurrently(int threadCount, java.util.function.IntConsumer task) throws InterruptedException {
+    private void runConcurrently(int threadCount, java.util.function.IntConsumer task)
+            throws InterruptedException {
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         CountDownLatch readyLatch = new CountDownLatch(threadCount);
         CountDownLatch startLatch = new CountDownLatch(1);

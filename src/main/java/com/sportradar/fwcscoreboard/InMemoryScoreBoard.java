@@ -20,7 +20,8 @@ import java.util.stream.Stream;
 /**
  * An in-memory {@link ScoreBoard} backed by a {@link LinkedHashMap}.
  *
- * <p>Not built for high-throughput concurrent access: every public method is synchronized on
+ * <p>
+ * Not built for high-throughput concurrent access: every public method is synchronized on
  * {@code this}, giving simple, easy-to-verify correctness for the modest number of simultaneous
  * matches a real scoreboard ever has (a handful, not thousands). A lock-free or finer-grained
  * design would only pay for itself at a scale this library isn't intended for.
