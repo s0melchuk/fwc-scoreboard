@@ -3,6 +3,18 @@ name: Publish package
 on:
   release:
     types: [published]
+  # release-on-merge.yml creates its Release using the default GITHUB_TOKEN, and GitHub
+  # deliberately does not let events triggered by that token cascade into other workflows
+  # (loop prevention) - so the `release: published` trigger above never fires for it.
+  # workflow_dispatch is explicitly exempted from that restriction, so release-on-merge.yml
+  # dispatches this workflow directly instead. A human creating a Release by hand still
+  # triggers this normally via `release: published`.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The release tag to publish (e.g. v1.2.3)
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -14,6 +26,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }} # only set on workflow_dispatch; release events already check out the tag
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
@@ -28,7 +42,10 @@ jobs:
       - name: Derive release version from tag
         id: version
         run: |
-          tag="${GITHUB_REF_NAME}"
+          # workflow_dispatch carries the tag as an explicit input; a release-triggered run
+          # has already checked out the tag ref, so GITHUB_REF_NAME is the tag itself.
+          tag="${{ inputs.tag }}"
+          tag="${tag:-$GITHUB_REF_NAME}"
           version="${tag#v}"
           echo "Publishing version: $version (from tag $tag)"
           echo "version=$version" >> "$GITHUB_OUTPUT"
