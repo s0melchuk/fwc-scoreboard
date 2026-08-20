@@ -1,15 +1,17 @@
 name: Release on merge
 
 # Every PR merged to main gets a new patch version, automatically: tag it, cut a GitHub
-# Release from it, and let that Release trigger publish.yml. There is no version to keep in
-# sync in pom.xml for this - the git tag is the single source of truth for the published
-# version, and publish.yml stamps it onto the POM only at publish time (see that workflow).
+# Release from it, and explicitly dispatch publish.yml (see the last step below for why this
+# can't just rely on the Release's own `release: published` trigger). There is no version to
+# keep in sync in pom.xml for this - the git tag is the single source of truth for the
+# published version, and publish.yml stamps it onto the POM only at publish time.
 on:
   pull_request:
     types: [closed]
 
 permissions:
   contents: write
+  actions: write # required to dispatch publish.yml from the last step below
 
 # Two PRs merging close together must not race to compute the same "next" tag; queue them.
 concurrency:
@@ -60,3 +62,15 @@ jobs:
           gh release create "${{ steps.version.outputs.new_tag }}" \
             --title "${{ steps.version.outputs.new_tag }}" \
             --generate-notes
+
+      # GitHub does not let events triggered by the default GITHUB_TOKEN cascade into other
+      # workflows (loop prevention), so the Release just created above will NOT fire
+      # publish.yml's `release: published` trigger on its own. workflow_dispatch is exempt
+      # from that restriction, so dispatch it explicitly instead.
+      - name: Trigger package publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run publish.yml \
+            --ref main \
+            -f tag="${{ steps.version.outputs.new_tag }}"

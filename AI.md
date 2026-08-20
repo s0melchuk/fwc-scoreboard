@@ -59,6 +59,21 @@ this file and the commit history itself.
    commit, and creates a GitHub Release (which in turn fires the existing `publish.yml`). Verified
    the version-bump arithmetic locally against real git tags (both the "no tags yet" and
    "existing vX.Y.Z tag" cases) before committing.
+6. **PR review response.** Two review comments on the publishing setup: `setup-java`'s
+   `server-id` alone doesn't provide deploy credentials (needs explicit
+   `server-username`/`server-password`), and `release-on-merge.yml`'s checkout resolved the
+   synthetic `refs/pull/*/merge` ref instead of the actual merged commit. Claude fixed both
+   (explicit credential env-var names; `ref: github.event.pull_request.merge_commit_sha`).
+7. **Diagnosing "no packages published."** After merging, the user reported no package had
+   appeared. Claude queried the GitHub REST API directly (no `gh` CLI available in this
+   environment) and found `publish.yml` had zero runs ever, despite `release-on-merge.yml`
+   having successfully tagged and released `v0.1.0` — the root cause being a GitHub Actions
+   safety rule that events triggered by the default `GITHUB_TOKEN` don't cascade into other
+   workflows (loop prevention), so the Release created by `gh release create` (authenticated
+   as `GITHUB_TOKEN`) never fired `publish.yml`'s `release: published` trigger. Fixed by having
+   `release-on-merge.yml` explicitly dispatch `publish.yml` via `workflow_dispatch`, which is
+   exempt from that restriction — avoiding the alternative fix of introducing a personal access
+   token as a repo secret.
 
 ## Artifacts that guided the implementation
 
