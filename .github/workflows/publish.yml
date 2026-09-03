@@ -30,7 +30,7 @@ jobs:
           ref: ${{ inputs.tag }} # only set on workflow_dispatch; release events already check out the tag
 
       - name: Set up JDK 25
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
