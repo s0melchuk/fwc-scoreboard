@@ -252,4 +252,64 @@ class InMemoryScoreBoardTest {
                     .containsExactly("Spain");
         }
     }
+
+    @Nested
+    class GoalsScoredBy {
+
+        @Test
+        void returnsTheHomeTeamsCurrentScore() {
+            MatchId id = board.startMatch("Mexico", "Canada");
+            board.updateScore(id, 3, 1);
+
+            assertThat(board.goalsScoredBy("Mexico")).isEqualTo(3);
+        }
+
+        @Test
+        void returnsTheAwayTeamsCurrentScore() {
+            MatchId id = board.startMatch("Mexico", "Canada");
+            board.updateScore(id, 3, 1);
+
+            assertThat(board.goalsScoredBy("Canada")).isEqualTo(1);
+        }
+
+        @Test
+        void returnsOnlyTheNamedTeamsScoreWhenSeveralMatchesAreInProgress() {
+            MatchId mexicoCanada = board.startMatch("Mexico", "Canada");
+            MatchId spainBrazil = board.startMatch("Spain", "Brazil");
+            MatchId germanyFrance = board.startMatch("Germany", "France");
+
+            board.updateScore(mexicoCanada, 3, 1);
+            board.updateScore(spainBrazil, 2, 4);
+            board.updateScore(germanyFrance, 0, 2);
+
+            assertThat(board.goalsScoredBy("Spain")).isEqualTo(2);
+            assertThat(board.goalsScoredBy("Brazil")).isEqualTo(4);
+        }
+
+        @Test
+        void returnsZeroForATeamThatIsNotCurrentlyPlaying() {
+            assertThat(board.goalsScoredBy("Mexico")).isZero();
+        }
+
+        @Test
+        void returnsZeroAfterTheTeamsMatchHasFinished() {
+            MatchId id = board.startMatch("Mexico", "Canada");
+            board.updateScore(id, 3, 1);
+            board.finishMatch(id);
+
+            assertThat(board.goalsScoredBy("Mexico")).isZero();
+        }
+
+        @Test
+        void rejectsNullTeamName() {
+            assertThatThrownBy(() -> board.goalsScoredBy(null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @Test
+        void rejectsBlankTeamName() {
+            assertThatThrownBy(() -> board.goalsScoredBy(" "))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
 }
