@@ -82,6 +82,15 @@ public final class InMemoryScoreBoard implements ScoreBoard {
         return Optional.ofNullable(matches.get(matchId));
     }
 
+    @Override
+    public synchronized long goalsScoredBy(String teamName) {
+        Team team = new Team(teamName);
+        return matches.values().stream()
+                .filter(m -> m.homeTeam().equals(team) || m.awayTeam().equals(team))
+                .mapToLong(m -> m.homeTeam().equals(team) ? m.score().home() : m.score().away())
+                .sum();
+    }
+
     private Match requireMatch(MatchId matchId) {
         Objects.requireNonNull(matchId, "matchId must not be null");
         Match match = matches.get(matchId);

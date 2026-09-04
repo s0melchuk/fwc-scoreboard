@@ -86,4 +86,23 @@ public interface ScoreBoard {
      *         throws for it
      */
     Optional<Match> getMatch(MatchId matchId);
+
+    /**
+     * Returns the number of goals the named team has scored in its current in-progress match.
+     *
+     * <p>
+     * Since finished matches are not retained (see the class-level note above), this reflects only
+     * the team's currently live match, not a cumulative or historical total across matches that
+     * have already finished.
+     *
+     * @param teamName
+     *            the team's name; must not be null or blank
+     * @return the team's goal count in its current match, or {@code 0} if the team is not currently
+     *         playing
+     * @throws NullPointerException
+     *             if {@code teamName} is {@code null}
+     * @throws IllegalArgumentException
+     *             if {@code teamName} is blank
+     */
+    long goalsScoredBy(String teamName);
 }
