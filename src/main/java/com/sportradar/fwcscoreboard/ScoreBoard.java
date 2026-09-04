@@ -97,8 +97,8 @@ public interface ScoreBoard {
      *
      * @param teamName
      *            the team's name; must not be null or blank
-     * @return the team's goal count in its current match, or {@code 0} if the team is not
-     *         currently playing
+     * @return the team's goal count in its current match, or {@code 0} if the team is not currently
+     *         playing
      * @throws NullPointerException
      *             if {@code teamName} is {@code null}
      * @throws IllegalArgumentException
